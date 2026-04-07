@@ -1,0 +1,24 @@
+{
+    "name": "liaodan/kxadmin",
+    "description": "KxAdmin System Module Framework",
+    "type": "library",
+    "version": "1.0.0",
+    "require": {
+        "tymon/jwt-auth": "^2.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "KxAdmin\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "KxAdmin\\AdminServiceProvider"
+            ]
+        }
+    }
+}
