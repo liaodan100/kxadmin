@@ -2,212 +2,101 @@
 
 namespace KxAdmin\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use KxAdmin\Response\ApiResponse;
+use KxAdmin\Models\AdminMenu;
+use KxAdmin\Models\AdminUser;
+use KxAdmin\Support\MenuTreeBuilder;
+use KxAdmin\Validate\AdminMenuStoreValidate;
+use KxAdmin\Validate\AdminMenuUpdateValidate;
 
 class MenuController extends AdminController
 {
-    use ApiResponse;
-    /**
-     * 获取菜单
-     * @param Request $request
-     * @return JsonResponse
-     */
     public function index(Request $request): JsonResponse
     {
-        return $this->success([
-            [
-                'id' => 1,
-                'name' => 'Dashboard',
-                'path' => '/dashboard',
-                'component' => '/index/index',
-                'meta' => [
-                    'title' => 'menus.dashboard.title',
-                    'icon' => 'ri:pie-chart-line',
-                ],
-                'children' => [
-                    [
-                        'id' => 2,
-                        'name' => 'Console',
-                        'path' => 'console',
-                        'component' => '/dashboard/console/index',
-                        'meta' => [
-                            'title' => '工作台',
-                            'icon' => 'ri:bar-chart-box-line',
-                            'keepAlive' => true,
-                            'fixedTab' => false
-                        ]
-                    ],
-                ],
-            ],
-            [
-                'id' => 2,
-                'name' => 'Product',
-                'path' => '/products',
-                'component' => '/index/index',
-                'meta' => [
-                    'title' => '产品中心',
-                    'icon' => 'ri:file-text-line',
-                ],
-                'children' => [
-                    [
-                        'id' => 31,
-                        'name' => 'Categories',
-                        'path' => 'categories',
-                        'component' => '/products/categories/index',
-                        'meta' => [
-                            'title' => '产品分类',
-                            'icon' => 'ri:home-smile-2-line',
-                            'keepAlive' => false,
-                            'fixedTab' => true
-                        ]
-                    ],
-                    [
-                        'id' => 52,
-                        'name' => 'Specification',
-                        'path' => 'specification',
-                        'component' => '/products/specification/index',
-                        'meta' => [
-                            'title' => '产品规格',
-                            'icon' => 'ri:home-smile-2-line',
-                            'keepAlive' => false,
-                            'fixedTab' => true
-                        ]
-                    ],
-                    [
-                        'id' => 41,
-                        'name' => 'Goods',
-                        'path' => 'goods',
-                        'component' => '/products/goods/index',
-                        'meta' => [
-                            'title' => '产品管理',
-                            'icon' => 'ri:home-smile-2-line',
-                            'keepAlive' => false,
-                            'fixedTab' => true
-                        ]
-                    ],
-                    [
-                        'id' => 42,
-                        'name' => 'GoodsPublish',
-                        'path' => 'goods-publish',
-                        'component' => '/products/goods/publish',
-                        'meta' => [
-                            'title' => '发布产品',
-                            'icon' => 'ri:home-smile-2-line',
-                            'keepAlive' => false,
-                            'fixedTab' => true,
-                            'isHide' => true
-                        ]
-                    ]
-                ]
-            ],
-            [
-                'id' => 8,
-                'name' => 'Quotation',
-                'path' => '/quotations',
-                'component' => '/index/index',
-                'meta' => [
-                    'title' => '报价单管理',
-                    'icon' => 'ri:file-list-3-line',
-                ],
-                'children' => [
-                    [
-                        'id' => 81,
-                        'name' => 'QuotationList',
-                        'path' => 'list',
-                        'component' => '/quotations/list/index',
-                        'meta' => [
-                            'title' => '报价单列表',
-                            'icon' => 'ri:file-list-line',
-                            'keepAlive' => true
-                        ]
-                    ],
-                    [
-                        'id' => 82,
-                        'name' => 'QuotationCreate',
-                        'path' => 'create',
-                        'component' => '/quotations/create/index',
-                        'meta' => [
-                            'title' => '创建报价单',
-                            'icon' => 'ri:file-add-line',
-                            'isHideTab' => true
-                        ]
-                    ],
-                    [
-                        'id' => 83,
-                        'name' => 'CustomerManage',
-                        'path' => 'customers',
-                        'component' => '/quotations/customers/index',
-                        'meta' => [
-                            'title' => '客户管理',
-                            'icon' => 'ri:user-heart-line',
-                            'keepAlive' => true
-                        ]
-                    ]
-                ]
-            ],
-            [
-                'id' => 3,
-                'name' => 'System',
-                'path' => '/system',
-                'component' => '/index/index',
-                'meta' => [
-                    'title' => 'menus.system.title',
-                    'icon' => 'ri:user-3-line',
-                ],
-                'children' => [
-                    [
-                        'id' => 4,
-                        'name' => 'User',
-                        'path' => 'user',
-                        'component' => '/system/user',
-                        'meta' => [
-                            'title' => 'menus.system.user',
-                            'icon' => 'ri:user-line',
-                            'keepAlive' => true,
-                            'roles' => ['R_SUPER', 'R_ADMIN']
-                        ]
-                    ],
-                    [
-                        'id' => 5,
-                        'name' => 'Role',
-                        'path' => 'role',
-                        'component' => '/system/role',
-                        'meta' => [
-                            'title' => 'menus.system.role',
-                            'icon' => 'ri:user-settings-line',
-                            'keepAlive' => true,
-                            'roles' => ['R_SUPER', 'R_ADMIN']
-                        ]
-                    ],
-                    [
-                        'id' => 7,
-                        'name' => 'Menu',
-                        'path' => 'menu',
-                        'component' => '/system/menu',
-                        'meta' => [
-                            'title' => 'menus.system.menu',
-                            'icon' => 'ri:menu-line',
-                            'keepAlive' => true,
-                            'roles' => ['R_SUPER', 'R_ADMIN']
-                        ]
-                    ],
-                    [
-                        'id' => 6,
-                        'name' => 'userCenter',
-                        'path' => 'user-center',
-                        'component' => '/system/user-center',
-                        'meta' => [
-                            'title' => 'menus.system.userCenter',
-                            'icon' => 'ri:user-line',
-                            'keepAlive' => true,
-                            'roles' => ['R_SUPER', 'R_ADMIN']
-                        ]
-                    ],
-                ]
-            ]
-        ]);
+        $menus = AdminMenu::query()
+            ->orderBy('sort')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (AdminMenu $menu) => $this->payload($menu))
+            ->all();
+
+        return $this->success($menus);
+    }
+
+    public function tree(): JsonResponse
+    {
+        $menus = AdminMenu::query()->orderBy('parent_id')->orderBy('sort')->orderBy('id')->get();
+
+        return $this->success(MenuTreeBuilder::build($menus, 0, fn (AdminMenu $menu) => $this->payload($menu)));
+    }
+
+    public function routes(Request $request): JsonResponse
+    {
+        /** @var AdminUser $user */
+        $user = $request->user();
+        $menus = $user->accessibleMenus();
+
+        return $this->success(MenuTreeBuilder::build($menus, 0, fn (AdminMenu $menu) => $menu->toRouteArray()));
+    }
+
+    public function show(AdminMenu $menu): JsonResponse
+    {
+        return $this->success($this->payload($menu));
+    }
+
+    public function store(AdminMenuStoreValidate $request): JsonResponse
+    {
+        $payload = $request->validated();
+        $payload['parent_id'] = (int) ($payload['parent_id'] ?? 0);
+        $menu = AdminMenu::query()->create($payload);
+
+        return $this->success($this->payload($menu), '创建成功');
+    }
+
+    public function update(AdminMenuUpdateValidate $request, AdminMenu $menu): JsonResponse
+    {
+        $payload = $request->validated();
+
+        if (array_key_exists('parent_id', $payload)) {
+            $payload['parent_id'] = (int) ($payload['parent_id'] ?? 0);
+        }
+
+        $menu->fill($payload)->save();
+
+        return $this->success($this->payload($menu), '更新成功');
+    }
+
+    public function destroy(AdminMenu $menu): JsonResponse
+    {
+        if (AdminMenu::query()->where('parent_id', $menu->id)->exists()) {
+            return $this->error([], '请先删除子菜单', 422, 422);
+        }
+
+        $menu->roles()->detach();
+        $menu->delete();
+
+        return $this->success([], '删除成功');
+    }
+
+    protected function payload(AdminMenu $menu): array
+    {
+        return [
+            'id' => $menu->id,
+            'parent_id' => $menu->parent_id,
+            'type' => $menu->type,
+            'path' => $menu->path,
+            'name' => $menu->name,
+            'component' => $menu->component,
+            'route_name' => $menu->route_name,
+            'redirect' => $menu->redirect,
+            'title' => $menu->title,
+            'icon' => $menu->icon,
+            'sort' => $menu->sort,
+            'keep_alive' => $menu->keep_alive,
+            'hidden' => $menu->hidden,
+            'status' => $menu->status,
+            'meta' => $menu->meta ?? [],
+        ];
     }
 }

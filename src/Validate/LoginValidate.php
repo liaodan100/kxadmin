@@ -7,19 +7,16 @@ class LoginValidate extends FormValidate
     public function rules(): array
     {
         return [
-            'username' => 'required|max:16',
-            'password' => 'required|max:32|min:6',
+            'username' => ['required', 'string', 'max:50'],
+            'password' => ['required', 'string', 'min:6', 'max:100'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'username.required' => '用户名不能为空',
-            'username.max' => '用户名不能超过16个字符',
-            'password.required' => '密码不能为空',
-            'password.max' => '密码不能超过32个字符',
-            'password.min' => '密码不能少于6个字符',
+            'username.required' => '请输入用户名',
+            'password.required' => '请输入密码',
         ];
     }
 }

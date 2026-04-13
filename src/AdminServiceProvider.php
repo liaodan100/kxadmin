@@ -4,53 +4,56 @@ namespace KxAdmin;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
-use KxAdmin\Commands\AdminCreate;
+use KxAdmin\Commands\AdminInitCommand;
 use KxAdmin\Middleware\Authenticate;
+use KxAdmin\Middleware\PermissionMiddleware;
 
 class AdminServiceProvider extends ServiceProvider
 {
-    protected array $command = [
-        AdminCreate::class,
+    protected array $commands = [
+        AdminInitCommand::class,
     ];
 
     protected array $routeMiddleware = [
         'admin.auth' => Authenticate::class,
+        'admin.permission' => PermissionMiddleware::class,
     ];
 
-    protected $middlewareGroups = [
-        'admin' => [
-            'admin.auth'
-        ]
+    protected array $middlewareGroups = [
+        'admin' => ['admin.auth'],
     ];
 
     public function register(): void
     {
-        // 加载Auth配置
+        $this->mergeConfigFrom(__DIR__ . '/../config/admin.php', 'admin');
+        require_once __DIR__ . '/helpers.php';
         $this->loadAdminAuthConfig();
-        // 中间件注册
+    }
+
+    public function boot(): void
+    {
         $this->registerRouteMiddleware();
-        // 注册命令行
-        $this->commands($this->command);
-        // 注册路由文件
-        if (file_exists($routers = admin_path('routers.php'))) {
-            $this->loadRoutesFrom($routers);
-        }
+        $this->commands($this->commands);
+        $this->loadMigrationsFrom(__DIR__ . '/Migrations');
+        $this->loadRoutesFrom(__DIR__ . '/routes.php');
+
+        $this->publishes([
+            __DIR__ . '/../config/admin.php' => config_path('admin.php'),
+        ], 'kxadmin-config');
     }
 
     protected function registerRouteMiddleware(): void
     {
-        // register route middleware.
         foreach ($this->routeMiddleware as $key => $middleware) {
             app('router')->aliasMiddleware($key, $middleware);
         }
 
-        // register middleware group.
         foreach ($this->middlewareGroups as $key => $middleware) {
             app('router')->middlewareGroup($key, $middleware);
         }
     }
 
-    protected function loadAdminAuthConfig()
+    protected function loadAdminAuthConfig(): void
     {
         config(Arr::dot(config('admin.auth', []), 'auth.'));
     }

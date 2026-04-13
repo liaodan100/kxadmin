@@ -2,39 +2,28 @@
 
 namespace KxAdmin\Controllers;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use KxAdmin\Response\ApiResponse;
 
-class UploadController extends Controller
+class UploadController extends AdminController
 {
-    use ApiResponse;
-    public function image(Request $request)
+    public function image(Request $request): JsonResponse
     {
-        try {
-            // 上传至七牛
-            $file = $request->file('file');
-            $saveAs = $request->post('saveAs');
-            $saveAs = $saveAs ?: 'upload/files';
+        $request->validate([
+            'file' => ['required', 'file', 'image', 'max:5120'],
+            'disk' => ['sometimes', 'string'],
+            'directory' => ['sometimes', 'string'],
+        ]);
 
-            $mime = $file->getClientMimeType();
-            // 允许图片
-            if (!in_array($mime, ['image/jpeg', 'image/png', 'image/gif'])) {
-                return $this->error([], '上传图片格式错误', 400);
-            }
-            $ext = $file->getClientOriginalExtension();
-            $objectName = $saveAs . '/' . date('Ymd') . md5(uniqid()) . '.' . $ext;
-            $result = Storage::disk('qiniu')->put($objectName, file_get_contents($file->getRealPath()));
-            if (!$result) {
-                return $this->error([], '上传失败', 400);
-            }
-            return $this->success([
-                'url' => Storage::disk('qiniu')->url($objectName),
-                'objectName' => $objectName,
-            ]);
-        } catch (\Exception $e) {
-            return $this->error([], $e->getMessage(), 400);
-        }
+        $disk = (string) $request->input('disk', config('filesystems.default', 'public'));
+        $directory = trim((string) $request->input('directory', 'admin/uploads/images'), '/');
+        $path = $request->file('file')->store($directory, $disk);
+
+        return $this->success([
+            'path' => $path,
+            'url' => Storage::disk($disk)->url($path),
+            'disk' => $disk,
+        ], '上传成功');
     }
 }
