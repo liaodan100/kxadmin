@@ -2,9 +2,11 @@
 
 namespace KxAdmin\Controllers;
 
+use App\Http\Requests\Admin\UpdatePasswordRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use KxAdmin\Models\AdminUser;
 use KxAdmin\Validate\LoginValidate;
 
@@ -22,7 +24,7 @@ class LoginController extends AdminController
         ]);
 
         if (!$token) {
-            return $this->error([], '用户名或密码错误', 401, 401);
+            return $this->error([], '用户名或密码错误', 400, 400);
         }
 
         /** @var AdminUser $user */
@@ -56,6 +58,22 @@ class LoginController extends AdminController
         $user = $request->user() ?? Auth::guard('admin')->user();
 
         return $this->success($this->userPayload($user));
+    }
+
+    public function updatePassword(UpdatePasswordRequest $request): JsonResponse
+    {
+        /** @var AdminUser $user */
+        $user = $request->user() ?? Auth::guard('admin')->user();
+
+        if (!$user || !Hash::check((string) $request->input('password'), (string) $user->password)) {
+            return $this->error([], '当前密码错误', 422, 422);
+        }
+
+        $user->forceFill([
+            'password' => Hash::make((string) $request->input('new_password')),
+        ])->save();
+
+        return $this->success([], '密码修改成功');
     }
 
     protected function tokenPayload($guard, string $token, AdminUser $user): array

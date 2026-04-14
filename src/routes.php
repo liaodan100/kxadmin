@@ -20,6 +20,7 @@ Route::prefix(config('admin.route.prefix', 'admin'))
             Route::post('login/refresh', [LoginController::class, 'refresh'])->name('auth.refresh');
             Route::post('login/logout', [LoginController::class, 'logout'])->name('auth.logout');
             Route::get('users/info', [LoginController::class, 'getLoginUserinfo'])->name('users.info');
+            Route::put('users/password', [LoginController::class, 'updatePassword'])->name('users.password');
             Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
             Route::get('menu/routes', [MenuController::class, 'routes'])->name('menus.routes');
             Route::post('upload', [FileUploadController::class, 'file'])->name('upload.file');
